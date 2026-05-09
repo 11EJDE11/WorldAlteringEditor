@@ -30,7 +30,7 @@ namespace TSMapEditor.Models
         public List<Theater> Theaters { get; } = new List<Theater>();
         public List<BridgeType> Bridges { get; } = new List<BridgeType>();
         public List<ConnectedOverlayType> ConnectedOverlays { get; } = new List<ConnectedOverlayType>();
-        public List<CliffType> Cliffs { get; } = new List<CliffType>();
+        public List<ConnectedTileType> Cliffs { get; } = new List<ConnectedTileType>();
         public List<TeamTypeFlag> TeamTypeFlags { get; } = new List<TeamTypeFlag>();
         public EvaSpeeches Speeches { get; private set; }
 
@@ -356,6 +356,45 @@ namespace TSMapEditor.Models
             }
         }
 
+        public void PostTheaterInit(Rules rules)
+        {
+            // Re-assign Theater Tiberium graphics overrides
+            foreach (var theater in Theaters)
+            {
+                foreach (var tileSet in theater.TileSets)
+                {
+                    tileSet.TiberiumGraphicsOverrides?.Clear();
+
+                    if (tileSet.ParsedTiberiumGraphicsOverrides != null &&
+                        tileSet.ParsedTiberiumGraphicsOverrides.Count > 0)
+                    {
+                        tileSet.TiberiumGraphicsOverrides = new Dictionary<TiberiumType, OverlayType>();
+
+                        foreach (var tiberiumGraphicsOverride in tileSet.ParsedTiberiumGraphicsOverrides)
+                        {
+                            TiberiumType tiberiumType = rules.TiberiumTypes.Find(tt => tt.ININame == tiberiumGraphicsOverride.tiberiumTypeName);
+
+                            if (tiberiumType == null)
+                            {
+                                throw new INIConfigException($"Failed to find TiberiumType \"{tiberiumGraphicsOverride.tiberiumTypeName}\" for " +
+                                    $"TiberiumOverlays= of TileSet {tileSet.SetName} ({tileSet.Index}) of Theater \"{theater.UIName}\"!");
+                            }
+
+                            OverlayType overlayType = rules.OverlayTypes.Find(ot => ot.ININame == tiberiumGraphicsOverride.graphicalOverlayName);
+
+                            if (overlayType == null)
+                            {
+                                throw new INIConfigException($"Failed to find OverlayType \"{tiberiumGraphicsOverride.graphicalOverlayName}\" for " +
+                                    $"TiberiumOverlays= of TileSet {tileSet.SetName} ({tileSet.Index}) of Theater \"{theater.UIName}\"!");
+                            }
+
+                            tileSet.TiberiumGraphicsOverrides.Add(tiberiumType, overlayType);
+                        }
+                    }
+                }
+            }
+        }
+
         private void ReadTeamTypeFlags()
         {
             TeamTypeFlags.Clear();
@@ -410,7 +449,7 @@ namespace TSMapEditor.Models
             {
                 string cliffIniName = kvp.Value;
 
-                CliffType cliffType = CliffType.FromIniSection(iniFile, cliffIniName);
+                ConnectedTileType cliffType = ConnectedTileType.FromIniSection(iniFile, cliffIniName);
                 if (cliffType != null)
                     Cliffs.Add(cliffType);
             }

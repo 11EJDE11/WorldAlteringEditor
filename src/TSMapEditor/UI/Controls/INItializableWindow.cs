@@ -61,15 +61,7 @@ namespace TSMapEditor.UI.Controls
 
             if (ConfigIni == null)
             {
-                string defaultConfigIniPath = Path.Combine(Environment.CurrentDirectory, "Config", "Default", "UI", SubDirectory, Name + ".ini");
-                string configIniPath = Path.Combine(Environment.CurrentDirectory, "Config", "UI", SubDirectory, Name + ".ini");
-
-                if (File.Exists(configIniPath))
-                    ConfigIni = new IniFile(configIniPath);
-                else if (File.Exists(defaultConfigIniPath))
-                    ConfigIni = new IniFile(defaultConfigIniPath);
-                else
-                    throw new FileNotFoundException("Config INI not found: " + configIniPath);
+                ConfigIni = Helpers.ReadConfigINI(Path.Combine("UI", SubDirectory, Name + ".ini"), true, true);
             }
 
             Parser.Instance.SetPrimaryControl(this);
@@ -248,7 +240,7 @@ namespace TSMapEditor.UI.Controls
                 {
                     // This logic should also be enabled for other types in the future,
                     // but it requires changes in XNAUI
-                    if (child is XNATextBox)
+                    if (child is XNATextBox textBox)
                     {
                         string nextControl = childSection.GetStringValue("NextControl", null);
 
@@ -257,7 +249,7 @@ namespace TSMapEditor.UI.Controls
                             var otherChild = children.Find(c => c.Name == nextControl);
                             if (otherChild != null)
                             {
-                                ((XNATextBox)child).NextControl = otherChild;
+                                textBox.NextControl = otherChild;
 
                                 if (otherChild is XNATextBox otherAsTb)
                                 {
@@ -272,7 +264,15 @@ namespace TSMapEditor.UI.Controls
                         {
                             var otherChild = children.Find(c => c.Name == previousControl);
                             if (otherChild != null)
-                                ((XNATextBox)child).PreviousControl = otherChild;
+                                textBox.PreviousControl = otherChild;
+                        }
+
+                        string enterPressControl = childSection.GetStringValue("EnterPressControl", null);
+                        if (!string.IsNullOrWhiteSpace(enterPressControl))
+                        {
+                            var otherChild = children.Find(c => c.Name == enterPressControl);
+                            if (otherChild != null)
+                                textBox.EnterPressed += (s, e) => otherChild.OnLeftClick(new InputEventArgs());
                         }
                     }
 

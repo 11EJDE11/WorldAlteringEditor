@@ -229,6 +229,49 @@ namespace TSMapEditor
 
         public static Point2D VisualDirectionToPoint(Direction direction) => visualDirectionToPointTable[(int)direction];
 
+        private static string[] directionToNameTable = new string[]
+        {
+            "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest", "North"
+        };
+
+        public static string DirectionToName(Direction direction) => directionToNameTable[(int)direction];
+
+        public static Direction DirectionFromPoints(Point2D p1, Point2D p2)
+        {
+            if (p1 == p2)
+                throw new ArgumentException("Cannot get direction from two identical points.");
+
+            int xDiff = p2.X - p1.X;
+            int yDiff = p2.Y - p1.Y;
+
+            if (xDiff == 0 || Math.Abs(yDiff) > Math.Abs(xDiff * 2))
+            {
+                if (yDiff > 0)
+                    return Direction.SW;
+
+                return Direction.NE;
+            }
+
+            if (yDiff == 0 || Math.Abs(xDiff) > Math.Abs(yDiff * 2))
+            {
+                if (xDiff > 0)
+                    return Direction.SE;
+
+                return Direction.NW;
+            }
+
+            if (xDiff > 0 && yDiff > 0)
+                return Direction.S;
+
+            if (xDiff > 0 && yDiff < 0)
+                return Direction.E;
+
+            if (xDiff < 0 && yDiff > 0)
+                return Direction.W;
+
+            return Direction.N;
+        }
+
         public static List<Direction> GetDirectionsInMask(byte mask)
         {
             List<Direction> directions = new List<Direction>();
@@ -384,23 +427,25 @@ namespace TSMapEditor
 
         public static void FindDefaultSideForNewHouseType(HouseType houseType, Rules rules)
         {
+            // Cut numbers from the end of the housetype's name (so, for example, GDI2 becomes GDI)
+            string houseTypeIniName = houseType.ININame;
+            while (houseTypeIniName.Length > 0 && char.IsDigit(houseTypeIniName[^1]))
+                houseTypeIniName = houseTypeIniName[..^1];
+
+            if (string.IsNullOrWhiteSpace(houseTypeIniName))
+            {
+                houseType.Side = rules.Sides[0];
+                return;
+            }
+
             for (int sideIndex = 0; sideIndex < rules.Sides.Count; sideIndex++)
             {
                 string side = rules.Sides[sideIndex];
 
-                if (houseType.ININame.StartsWith(side))
+                if (side.StartsWith(houseTypeIniName))
                 {
                     houseType.Side = side;
                     break;
-                }
-
-                if (side.EndsWith("Side") && side.Length > 4)
-                {
-                    if (houseType.ININame.StartsWith(side[..4]))
-                    {
-                        houseType.Side = side;
-                        break;
-                    }
                 }
             }
 
@@ -740,7 +785,7 @@ namespace TSMapEditor
             return false;
         }
 
-        public static IniFile ReadConfigINI(string path, bool applyTranslation = true)
+        public static IniFile ReadConfigINI(string path, bool applyTranslation = true, bool throwIfNotFound = false)
         {
             string customPath = Path.Combine(Environment.CurrentDirectory, "Config", path);
             string defaultPath = Path.Combine(Environment.CurrentDirectory, "Config", "Default", path);
@@ -753,6 +798,9 @@ namespace TSMapEditor
             }
             else
             {
+                if (throwIfNotFound && !File.Exists(defaultPath))
+                    throw new FileNotFoundException("Config INI not found: " + path);
+
                 iniFile = new IniFile(defaultPath);
             }
 
@@ -781,6 +829,47 @@ namespace TSMapEditor
                 return new IniFileEx(customPath, fileManager);
 
             return new IniFileEx(defaultPath, fileManager);
+        }
+
+        public static string DifficultyToTranslatedString(Difficulty difficulty)
+        {
+            switch (difficulty)
+            {
+                case Difficulty.None:
+                    return Translate("Difficulty.None", "None");
+                case Difficulty.Easy:
+                    return Translate("Difficulty.Easy", "Easy");
+                case Difficulty.Medium:
+                    return Translate("Difficulty.Medium", "Medium");
+                case Difficulty.Hard:
+                    return Translate("Difficulty.Hard", "Hard");
+                default:
+                    throw new NotImplementedException(nameof(DifficultyToTranslatedString) + ": Unknown difficulty level " + difficulty);
+            }
+        }
+
+        /// <summary>
+        /// Shared helper function used by Triggers, TaskForces, Scripts, TeamTypes, and AI Triggers.
+        /// Used to generate the name of the instance during the cloning process of those entities.
+        /// If the provided name contains a number, the number is incremented and the name is returned as is. 
+        /// Otherwise, a localized " (Clone)" suffix is appended to the name.
+        /// If there are multiple numbers in the name, only the first is incremented.
+        /// </summary>
+        public static string GetNameForClone(string name)
+        {
+            string[] parts = name.Split(" ");
+            int numPart = -1;            
+
+            for (int i = 0; i < parts.Length; i++)
+            {                
+                if (int.TryParse(parts[i], out numPart) && numPart >= 0)
+                {
+                    parts[i] = (numPart + 1).ToString(CultureInfo.InvariantCulture);
+                    return string.Join(" ", parts);
+                }
+            }
+
+            return name + Translate("CloneName", " (Clone)");
         }
     }
 }

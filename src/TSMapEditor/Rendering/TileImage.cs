@@ -97,6 +97,26 @@ namespace TSMapEditor.Rendering
         public MGTMPImage[] TMPImages { get; set; }
 
         /// <summary>
+        /// Performs an action for all valid sub-tiles of the TMP image.
+        /// </summary>
+        /// <param name="action">The action to perform. First parameter is the sub-tile, second parameter its offset within the tile, and the third parameter is the sub-tile's index.</param>
+        public void DoForValidSubTiles(Action<MGTMPImage, Point2D, int> action)
+        {
+            for (int i = 0; i < TMPImages.Length; i++)
+            {
+                MGTMPImage image = TMPImages[i];
+
+                if (image == null)
+                    continue;
+
+                int cx = i % Width;
+                int cy = i / Width;
+
+                action(image, new Point2D(cx, cy), i);
+            }
+        }
+
+        /// <summary>
         /// Calculates and returns the width of this full tile image.
         /// </summary>
         public int GetWidth(out int outMinX)

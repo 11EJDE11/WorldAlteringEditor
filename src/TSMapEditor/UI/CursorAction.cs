@@ -75,6 +75,8 @@ namespace TSMapEditor.UI
 
         protected IMutationTarget MutationTarget => CursorActionTarget.MutationTarget;
 
+        protected MutationManager MutationManager => CursorActionTarget.MutationManager;
+
         protected bool Is2DMode => CursorActionTarget.Is2DMode;
 
         protected RKeyboard Keyboard => CursorActionTarget.WindowManager.Keyboard;
@@ -125,6 +127,18 @@ namespace TSMapEditor.UI
         /// </summary>
         /// <param name="cellCoords">The coords of the cell under the cursor.</param>
         public virtual void LeftClick(Point2D cellCoords) { }
+
+        /// <summary>
+        /// Called on each frame.
+        /// </summary>
+        /// <param name="cellCoords">The coords of the cell under the cursor, if any.</param>
+        public virtual void Update(Point2D? cellCoords) { }
+
+        /// <summary>
+        /// Called each frame when the cursor is outside of the map view.
+        /// Allows the cursor action to clean up state to prevent accidental painting.
+        /// </summary>
+        public virtual void InactiveUpdate() { }
 
         /// <summary>
         /// Called after drawing the map.

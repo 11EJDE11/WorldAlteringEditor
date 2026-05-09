@@ -139,7 +139,7 @@ namespace TSMapEditor.UI.TopBar
                 if (cliffCount == 1)
                 {
                     editContextMenu.AddItem(Translate(this, "Edit.DrawConnectedTiles", "Draw Connected Tiles"), () => mapUI.EditorState.CursorAction =
-                        new DrawCliffCursorAction(mapUI, theaterMatchingCliffs[0]), null, null, null);
+                        new DrawConnectedTilesCursorAction(mapUI, theaterMatchingCliffs[0]), null, null, null);
                 }
                 else
                 {
@@ -171,6 +171,7 @@ namespace TSMapEditor.UI.TopBar
             viewContextMenu.AddItem(" ", null, () => false, null, null);
             viewContextMenu.AddItem(Translate(this, "View.ToggleImpassableCells", "Toggle Impassable Cells"), () => mapUI.EditorState.HighlightImpassableCells = !mapUI.EditorState.HighlightImpassableCells, null, null, null);
             viewContextMenu.AddItem(Translate(this, "View.ToggleIceGrowthPreview", "Toggle IceGrowth Preview"), () => mapUI.EditorState.HighlightIceGrowth = !mapUI.EditorState.HighlightIceGrowth, null, null, null);
+            viewContextMenu.AddItem(Translate(this, "View.ToggleExtraGraphicsIn2DMode", "Toggle Extra Graphics in 2D Mode"), ToggleExtraGraphicsIn2DMode, null, null, null);
             viewContextMenu.AddItem(" ", null, () => false, null, null);
             viewContextMenu.AddItem(Translate(this, "View.ViewMinimap", "View Minimap"), () => windowController.MinimapWindow.Open());
             viewContextMenu.AddItem(" ", null, () => false, null, null);
@@ -238,6 +239,7 @@ namespace TSMapEditor.UI.TopBar
             scriptingContextMenu.Name = nameof(scriptingContextMenu);
             scriptingContextMenu.AddItem(Translate(this, "Scipting.Houses", "Houses"), () => windowController.HousesWindow.Open(), null, null, null);
             scriptingContextMenu.AddItem(Translate(this, "Scripting.Triggers", "Triggers"), () => windowController.TriggersWindow.Open(), null, null, null);
+            scriptingContextMenu.AddItem(Translate(this, "Scripting.Tags", "Tags"), () => windowController.TagsWindow.Open(), null, null, null);
             scriptingContextMenu.AddItem(Translate(this, "Scripting.TaskForces", "TaskForces"), () => windowController.TaskForcesWindow.Open(), null, null, null);
             scriptingContextMenu.AddItem(Translate(this, "Scripting.Scripts", "Scripts"), () => windowController.ScriptsWindow.Open(), null, null, null);
             scriptingContextMenu.AddItem(Translate(this, "Scripting.TeamTypes", "TeamTypes"), () => windowController.TeamTypesWindow.Open(), null, null, null);
@@ -415,6 +417,13 @@ namespace TSMapEditor.UI.TopBar
             mapUI.InvalidateMap();
         }
 
+        private void ToggleExtraGraphicsIn2DMode()
+        {
+            UserSettings.Instance.DrawExtraGraphicsIn2DMode.UserDefinedValue = !UserSettings.Instance.DrawExtraGraphicsIn2DMode;
+            _ = UserSettings.Instance.SaveSettingsAsync();
+            mapUI.InvalidateMap();
+        }
+
         private void EnterTerrainGenerator()
         {
             if (windowController.TerrainGeneratorConfigWindow.TerrainGeneratorConfig == null)
@@ -441,7 +450,7 @@ namespace TSMapEditor.UI.TopBar
 
         private void SelectConnectedTileWindow_ObjectSelected(object sender, EventArgs e)
         {
-            mapUI.EditorState.CursorAction = new DrawCliffCursorAction(mapUI, windowController.SelectConnectedTileWindow.SelectedObject);
+            mapUI.EditorState.CursorAction = new DrawConnectedTilesCursorAction(mapUI, windowController.SelectConnectedTileWindow.SelectedObject);
         }
 
         private void Open()

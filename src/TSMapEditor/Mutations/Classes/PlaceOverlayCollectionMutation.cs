@@ -10,7 +10,7 @@ namespace TSMapEditor.Mutations.Classes
     /// <summary>
     /// A mutation that allows placing overlay collections.
     /// </summary>
-    class PlaceOverlayCollectionMutation : Mutation
+    class PlaceOverlayCollectionMutation : Mutation, ICheckableMutation
     {
         public PlaceOverlayCollectionMutation(IMutationTarget mutationTarget, OverlayCollection overlayCollection, Point2D cellCoords) : base(mutationTarget)
         {
@@ -24,6 +24,8 @@ namespace TSMapEditor.Mutations.Classes
         private readonly Point2D cellCoords;
 
         private OriginalOverlayInfo[] undoData;
+
+        public bool ShouldPerform() => true;
 
         public override string GetDisplayString()
         {

@@ -476,9 +476,9 @@ namespace TSMapEditor.UI
             {
                 if (Cursor.LeftDown)
                 {
-                    if (leftPressedDownOnControl && tileUnderCursor != null)
+                    if (leftPressedDownOnControl && tileUnderCursor != null && CursorAction.OnlyUniqueCellEvents)
                     {
-                        if (lastTileUnderCursor != tileUnderCursor || !CursorAction.OnlyUniqueCellEvents)
+                        if (lastTileUnderCursor != tileUnderCursor)
                             CursorAction.LeftDown(tileUnderCursor.CoordsToPoint());
 
                         lastTileUnderCursor = tileUnderCursor;
@@ -644,16 +644,32 @@ namespace TSMapEditor.UI
             tileUnderCursor = tile;
             TileInfoDisplay.MapTile = tile;
 
-            if (IsActive && tileUnderCursor != null)
+            if (IsActive)
             {
-                var tilePosition = GetRelativeTilePositionFromCursorPosition(tileUnderCursor);
-                TechnoUnderCursor = tileUnderCursor.GetTechno(tilePosition);
-
-                if (KeyboardCommands.Instance.DeleteObject.AreKeysDown(Keyboard))
+                if (tileUnderCursor != null)
                 {
-                    if (WindowManager.SelectedControl == null || WindowManager.SelectedControl is not XNATextBox)
-                        DeleteObjectFromCell(tileUnderCursor.CoordsToPoint());
+                    var tilePosition = GetRelativeTilePositionFromCursorPosition(tileUnderCursor);
+                    TechnoUnderCursor = tileUnderCursor.GetTechno(tilePosition);
+
+                    if (KeyboardCommands.Instance.DeleteObject.AreKeysDown(Keyboard))
+                    {
+                        if (WindowManager.SelectedControl == null || WindowManager.SelectedControl is not XNATextBox)
+                            DeleteObjectFromCell(tileUnderCursor.CoordsToPoint());
+                    }
+
+                    if (CursorAction != null)
+                    {
+                        CursorAction.Update(tileUnderCursor.CoordsToPoint());
+
+                        if (Cursor.LeftDown && !CursorAction.OnlyUniqueCellEvents)
+                            CursorAction.LeftDown(tileUnderCursor.CoordsToPoint());
+                    }
                 }
+            }
+            else
+            {
+                if (CursorAction != null)
+                    CursorAction.InactiveUpdate();
             }
 
             base.Update(gameTime);

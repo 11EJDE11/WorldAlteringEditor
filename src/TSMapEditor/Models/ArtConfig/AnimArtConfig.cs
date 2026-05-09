@@ -1,4 +1,6 @@
 using Rampastring.Tools;
+using System;
+using TSMapEditor.CCEngine;
 
 namespace TSMapEditor.Models.ArtConfig
 {
@@ -10,6 +12,7 @@ namespace TSMapEditor.Models.ArtConfig
         public string Image { get; set; }
         public int YDrawOffset { get; set; }
         public int XDrawOffset { get; set; } // Phobos
+        public int YSortAdjust { get; set; }
         public bool NewTheater { get; set; }
         public bool Theater { get; set; }
         public bool AltPalette { get; set; }
@@ -17,6 +20,7 @@ namespace TSMapEditor.Models.ArtConfig
         public bool Shadow { get; set; }
         public int Start { get; set; }
         public int Translucency { get; set; }
+        public LayerType Layer { get; set; } // Vinifera
 
         /// <summary>
         /// Only used on building and tile animations, setting it to false makes them draw
@@ -40,6 +44,7 @@ namespace TSMapEditor.Models.ArtConfig
             Image = iniSection.GetStringValue(nameof(Image), Image);
             YDrawOffset = iniSection.GetIntValue(nameof(YDrawOffset), YDrawOffset);
             XDrawOffset = iniSection.GetIntValue(nameof(XDrawOffset), XDrawOffset);
+            YSortAdjust = iniSection.GetIntValue(nameof(YSortAdjust), YSortAdjust);
             NewTheater = iniSection.GetBooleanValue(nameof(NewTheater), NewTheater);
             Theater = iniSection.GetBooleanValue(nameof(Theater), Theater);
             AltPalette = iniSection.GetBooleanValue(nameof(AltPalette), AltPalette);
@@ -48,6 +53,7 @@ namespace TSMapEditor.Models.ArtConfig
             Shadow = iniSection.GetBooleanValue(nameof(Shadow), Shadow);
             Start = iniSection.GetIntValue(nameof(Start), Start);
             Translucency = iniSection.GetIntValue(nameof(Translucency), Translucency);
+            Layer = Enum.Parse<LayerType>(iniSection.GetStringValue(nameof(Layer), Layer.ToString()), true);
         }
     }
 }

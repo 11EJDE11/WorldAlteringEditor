@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using TSMapEditor.GameMath;
+using TSMapEditor.Models.ArtConfig;
 
 namespace TSMapEditor.Models
 {
@@ -85,6 +86,7 @@ namespace TSMapEditor.Models
         public int X { get; set; }
         public int YSort { get; set; }
         public int ZAdjust { get; set; }
-        public readonly int SortValue => YSort - ZAdjust * ZAdjustMult;
+
+        public int SortValue(AnimArtConfig animArtConfig) => (int)animArtConfig.Layer * 1000 + YSort + animArtConfig.YSortAdjust - ZAdjust * ZAdjustMult;
     }
 }

@@ -2,17 +2,20 @@
 using System.Collections.Generic;
 using TSMapEditor.GameMath;
 using TSMapEditor.Models;
+using TSMapEditor.Mutations;
 using TSMapEditor.Mutations.Classes;
 
 namespace TSMapEditor.UI.CursorActions
 {
-    public class ConnectedOverlayPlacementAction : CursorAction
+    public class ConnectedOverlayPlacementAction : LineAndRegularPaintingAction
     {
         public ConnectedOverlayPlacementAction(ICursorActionTarget cursorActionTarget) : base(cursorActionTarget)
         {
         }
 
         public override string GetName() => Translate("Name", "Place Connected Overlay");
+        protected override bool ClearPreviousCellOnMouseUp => true;
+
         public ConnectedOverlayType ConnectedOverlayType { get; set; }
         struct OriginalOverlayInfo
         {
@@ -28,8 +31,20 @@ namespace TSMapEditor.UI.CursorActions
 
         private List<OriginalOverlayInfo> originalOverlay = new List<OriginalOverlayInfo>();
 
+        public override void OnActionExit()
+        {
+            ClearLinePreview();
+            base.OnActionExit();
+        }
+
         public override void PreMapDraw(Point2D cellCoords)
         {
+            if (LineSourceCell.HasValue)
+            {
+                ApplyLinePreview(cellCoords);
+                return;
+            }
+
             originalOverlay.Clear();
 
             CursorActionTarget.BrushSize.DoForBrushSizeAndSurroundings(offset =>
@@ -49,6 +64,12 @@ namespace TSMapEditor.UI.CursorActions
 
         public override void PostMapDraw(Point2D cellCoords)
         {
+            if (LineSourceCell.HasValue)
+            {
+                ClearLinePreview();
+                return;
+            }
+
             int index = 0;
 
             CursorActionTarget.BrushSize.DoForBrushSizeAndSurroundings(offset =>
@@ -77,12 +98,21 @@ namespace TSMapEditor.UI.CursorActions
             CursorActionTarget.AddRefreshPoint(cellCoords, Math.Max(CursorActionTarget.BrushSize.Height, CursorActionTarget.BrushSize.Width));
         }
 
-        public override void LeftDown(Point2D cellCoords)
+        protected override ICheckableMutation CreateRegularPlacementMutation(Point2D cellCoords)
         {
-            var mutation = new PlaceConnectedOverlayMutation(CursorActionTarget.MutationTarget, ConnectedOverlayType, cellCoords);
-            CursorActionTarget.MutationManager.PerformMutation(mutation);
+            return new PlaceConnectedOverlayMutation(CursorActionTarget.MutationTarget, ConnectedOverlayType, cellCoords);
         }
 
-        public override void LeftClick(Point2D cellCoords) => LeftDown(cellCoords);
+        protected override Mutation CreateLinePlacementMutation(Direction direction, int length)
+        {
+            return new PlaceConnectedOverlayLineMutation(MutationTarget, ConnectedOverlayType, LineSourceCell.Value, direction, length);
+        }
+
+        protected override void ApplyLine(Point2D cellCoords)
+        {
+            (Direction direction, int length) = GetLineInformation(cellCoords);
+            var mutation = CreateLinePlacementMutation(direction, length);
+            PerformMutation(mutation);
+        }
     }
 }

@@ -42,10 +42,13 @@ namespace TSMapEditor.Settings
 
                 ScrollRate,
                 MapWideOverlayOpacity,
+                DrawExtraGraphicsIn2DMode,
 
                 Theme,
                 UseBoldFont,
                 SmartScriptActionCloning,
+                SmartScriptActionDefaultValues,
+                QuickTriggerParameterSelection,
                 AutoSaveInterval,
                 SidebarWidth,
 
@@ -100,12 +103,16 @@ namespace TSMapEditor.Settings
 
         public IntSetting ScrollRate = new IntSetting(MapView, nameof(ScrollRate), 15);
         public IntSetting MapWideOverlayOpacity = new IntSetting(MapView, nameof(MapWideOverlayOpacity), 50);
+        public BoolSetting DrawExtraGraphicsIn2DMode = new BoolSetting(MapView, nameof(DrawExtraGraphicsIn2DMode), true);
 
         public StringSetting Theme = new StringSetting(General, nameof(Theme), "Default");
         public BoolSetting UseBoldFont = new BoolSetting(General, nameof(UseBoldFont), false);
         public BoolSetting SmartScriptActionCloning = new BoolSetting(General, nameof(SmartScriptActionCloning), true);
+        public BoolSetting SmartScriptActionDefaultValues = new BoolSetting(General, nameof(SmartScriptActionDefaultValues), true);
+        public BoolSetting QuickTriggerParameterSelection = new BoolSetting(General, nameof(QuickTriggerParameterSelection), true);
         public IntSetting AutoSaveInterval = new IntSetting(General, nameof(AutoSaveInterval), 300);
         public IntSetting SidebarWidth = new IntSetting(General, nameof(SidebarWidth), 250);
+        public BoolSetting DoNotSuggestMPStartingWaypoints = new BoolSetting(General, nameof(DoNotSuggestMPStartingWaypoints), false);
 
         public BoolSetting MultithreadedTextureLoading = new BoolSetting(General, nameof(MultithreadedTextureLoading), true);
         public BoolSetting LogFileLoading = new BoolSetting(General, nameof(LogFileLoading), false);
